@@ -126,6 +126,9 @@ def save_files_from_string(input_string):
                 file_names.append(file_name)
     return file_names
 
+def generateDesignDocument(spec):
+    return call_openAi_api(design_doc_prompt, spec)
+"""
 design = call_openAi_api(design_doc_prompt, spec)
 print("This is the design document created:")
 print(design)
@@ -163,5 +166,4 @@ while continue_testing:
     fix = call_openAi_api(debugging_prompt,  user_prompt)
     save_files_from_string(fix)
     print(fix)
-    
-    
+"""

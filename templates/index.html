@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<style>
+  .Editor-container {
+    width: 40%; /* 40% of the parent element width */
+    height: 80vh; /* 80% of the viewport height */
+    float: left; /* Align the container to the left */
+    margin: 10px 0; /* Provides vertical space between the editors */
+    display: inline-block; /* Use inline-block for better control */
+  }
+  .Editor-container.right {
+    display: none; /* Initially hide the right editor container */
+  }
+  #button {
+    float: left; /* Float the button to the left */
+    margin: 10px 20px; /* Provides margin around the button */
+    height: 50px; /* Set a fixed height for the button */
+  }
+  .SimpleMDE {
+    height: 100%; /* Makes the SimpleMDE editor take full height of its container */
+  }
+  /* Clears floats */
+  .clear {
+    clear: both;
+  }
+</style>
+</head>
+<body>
+
+<div class="Editor-container">
+  <textarea id="markdownEditor1"></textarea>
+</div>
+
+<button id="button" onclick="toggleMarkdownEditor()">button</button>
+
+<div class="Editor-container right">
+  <textarea id="markdownEditor2"></textarea>
+</div>
+
+<!-- Clear the float -->
+<div class="clear"></div>
+
+<script>
+  var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
+  var markdownEditor2 = null;
+
+  function toggleMarkdownEditor() {
+    var editorContainer = document.querySelector(".Editor-container.right");
+    var content = markdownEditor1.value();
+
+    // Send content to Flask
+    fetch('/process', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Initialize the markdown editor if it's not already created
+        if (!markdownEditor2) {
+            markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
+        }
+        markdownEditor2.value(data); // Update the right editor with the response
+        editorContainer.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+
+</body>
+</html>

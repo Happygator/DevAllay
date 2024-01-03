@@ -1,4 +1,3 @@
-```python
 # website_functions.py
 
 import unittest
@@ -39,4 +38,3 @@ class TestWebsiteFunctions(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
-```
