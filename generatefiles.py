@@ -33,7 +33,7 @@ Format your output entirely in plain English, with no code written yet. We need 
 main_code_prompt = '''
 Implement the Python code for the design and the unit tests in one single file.
 Make sure all variables are propertly declared and the code should pass all the unit tests.
-Before each file, explicitly write a filename.
+Do not rewrite the unit tests. Instead, only output the main code.
 '''
 unit_test_prompt = '''
 Write the unit tests of public functions in the following design, with detailed
@@ -128,6 +128,12 @@ def save_files_from_string(input_string):
 
 def generateDesignDocument(spec):
     return call_openAi_api(design_doc_prompt, spec)
+    
+def generateUnitTests(design_doc):
+    return call_openAi_api(unit_test_prompt, design_doc)
+    
+def generateMainCode(design_doc, tests):
+    return call_openAi_api(main_code_prompt, "Here is the design:\n" + design_doc  + "\n\n\nAnd here are the unit tests:\n" + tests)
 """
 design = call_openAi_api(design_doc_prompt, spec)
 print("This is the design document created:")

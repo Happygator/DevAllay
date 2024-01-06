@@ -1,78 +1,174 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-<style>
-  .Editor-container {
-    width: 40%; /* 40% of the parent element width */
-    height: 80vh; /* 80% of the viewport height */
-    float: left; /* Align the container to the left */
-    margin: 10px 0; /* Provides vertical space between the editors */
-    display: inline-block; /* Use inline-block for better control */
-  }
-  .Editor-container.right {
-    display: none; /* Initially hide the right editor container */
-  }
-  #button {
-    float: left; /* Float the button to the left */
-    margin: 10px 20px; /* Provides margin around the button */
-    height: 50px; /* Set a fixed height for the button */
-  }
-  .SimpleMDE {
-    height: 100%; /* Makes the SimpleMDE editor take full height of its container */
-  }
-  /* Clears floats */
-  .clear {
-    clear: both;
-  }
-</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+  <style>
+    .Editor-container {
+      width: 50%;
+      height: 80vh;
+      float: left;
+      margin: 10px 0;
+      display: inline-block;
+    }
+    .Editor-container.right {
+      display: block;
+    }
+    #button, #newButton, #mainCodeButton {
+      display: block; /* Make buttons block level for full width */
+      width: 100%; /* Full width */
+      margin: 10px 0; /* Margin for spacing */
+      height: 50px; /* Button height */
+    }
+    .SimpleMDE, .CodeMirror {
+      height: 100%;
+    }
+    .Code-editor-container {
+      width: 50%; /* Half of the screen width */
+      height: 20vh; /* 20% of the viewport height */
+      float: left; /* Align side by side */
+      display: block; /* Initially hidden */
+    }
+    .clear {
+      clear: both;
+    }
+  </style>
 </head>
 <body>
-
-<div class="Editor-container">
-  <textarea id="markdownEditor1"></textarea>
-</div>
-
-<button id="button" onclick="toggleMarkdownEditor()">button</button>
-
-<div class="Editor-container right">
-  <textarea id="markdownEditor2"></textarea>
-</div>
-
-<!-- Clear the float -->
-<div class="clear"></div>
-
-<script>
-  var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
-  var markdownEditor2 = null;
-
-  function toggleMarkdownEditor() {
-    var editorContainer = document.querySelector(".Editor-container.right");
-    var content = markdownEditor1.value();
-
-    // Send content to Flask
-    fetch('/process', {
+  
+  <div class="Editor-container">
+    <textarea id="markdownEditor1"></textarea>
+  </div>
+  
+  <div class="Editor-container right">
+    <textarea id="markdownEditor2"></textarea>
+  </div>
+  
+  <div class="clear"></div>
+  
+  <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
+  <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
+  <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
+  
+  <div class="Code-editor-container" id="codeEditorContainer1"></div>
+  <div class="Code-editor-container" id="codeEditorContainer2"></div>
+  
+  <script>
+    var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
+    var markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
+    var codeEditor1, codeEditor2;
+    
+    function initializeWindows() {
+      
+      codeEditor1 = CodeMirror(document.getElementById("codeEditorContainer1"), {
+        mode: "javascript",
+        theme: "default",
+      });
+      
+      codeEditor2 = CodeMirror(document.getElementById("codeEditorContainer2"), {
+        mode: "javascript",
+        theme: "default",
+      });
+    }
+    
+    function toggleMarkdownEditor() {
+      var editorContainer = document.querySelector(".Editor-container.right");
+      var content = markdownEditor1.value();
+      
+      fetch('/process', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ content: content })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Initialize the markdown editor if it's not already created
-        if (!markdownEditor2) {
-            markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
-        }
-        markdownEditor2.value(data); // Update the right editor with the response
-        editorContainer.style.display = 'block';
-    })
-    .catch(error => {
+      })
+      .then(response => response.json())
+      .then(data => {
+        markdownEditor2.value(data);
+      })
+      .catch(error => {
         console.error('Error:', error);
-    });
-}
-</script>
-
+      });
+    }
+    
+    function toggleFirstCodeEditor() {
+      var codeEditorContainer1 = document.getElementById("codeEditorContainer1");
+      var isVisible = codeEditorContainer1.style.display === 'block';
+      
+      console.log("Toggle button pressed. Current visibility:", isVisible);
+      
+      if (!isVisible) {
+        if (!markdownEditor2) {
+          console.error("Markdown Editor 2 is not initialized.");
+          return;
+        }
+        
+        var content = markdownEditor2.value();
+        console.log("Fetching unit tests for content:", content);
+        
+        fetch('/generate_unit_tests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content: content })
+        })
+        .then(	response => response.json())
+        .then(data => {
+          console.log("Received data:", data);
+          /*
+          if(data.output !== undefined) {
+            codeEditor1.setValue(data.output);
+          } else {
+            console.error("Received 'undefined' for data.output");
+          }
+          */
+          codeEditor1.setValue(data)
+          codeEditorContainer1.style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      } else {
+        codeEditorContainer1.style.display = 'none';
+      }
+    }
+    
+    function writeMainCode() {
+      if (!codeEditor1 || !codeEditor2) {
+        console.error("Code editors are not initialized.");
+        return;
+      }
+      
+      var markdownContent = markdownEditor2.value();
+      var codeContent = codeEditor1.getValue();
+      
+      console.log("Fetching main code for content:", markdownContent, codeContent);
+      
+      fetch('/generate_main_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ markdown: markdownContent, code: codeContent })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Received data:", data);
+        codeEditor2.setValue(data);
+        document.getElementById("codeEditorContainer2").style.display = 'block';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+    
+    // Initialize Ace Editors on page load
+    document.addEventListener('DOMContentLoaded', initializeWindows);
+  </script>
+  
 </body>
 </html>
