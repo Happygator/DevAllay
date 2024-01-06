@@ -1,0 +1,46 @@
+import unittest
+from unittest.mock import patch, MagicMock
+from image_downloader import download_images, find_next_page_url
+
+class TestImageDownloader(unittest.TestCase):
+
+    @patch('image_downloader.requests.get')
+    @patch('image_downloader.BeautifulSoup')
+    @patch('image_downloader.open', create=True)
+    def test_download_images(self, mock_open, mock_bs, mock_get):
+        # Test case for successful image download
+        mock_response = MagicMock()
+        mock_response.content = b'fake image content'
+        mock_get.return_value = mock_response
+        mock_bs_instance = MagicMock()
+        mock_bs.return_value = mock_bs_instance
+        mock_bs_instance.find_all.return_value = ['http://example.com/image1.jpg', 'http://example.com/image2.jpg']
+        
+        download_images('http://example.com')
+        
+        mock_get.assert_called_with('http://example.com')
+        mock_bs.assert_called_with(mock_response.content, 'html.parser')
+        mock_bs_instance.find_all.assert_called_with('img', {'src': True})
+        mock_open.assert_any_call('image1.jpg', 'wb').write(b'fake image content')
+        mock_open.assert_any_call('image2.jpg', 'wb').write(b'fake image content')
+
+    @patch('image_downloader.BeautifulSoup')
+    def test_find_next_page_url(self, mock_bs):
+        # Test case for finding next page URL
+        mock_bs_instance = MagicMock()
+        mock_bs.return_value = mock_bs_instance
+        mock_bs_instance.find.return_value = MagicMock(href='http://example.com/page2')
+        
+        next_page_url = find_next_page_url('<a href="http://example.com/page2">Next Link</a>')
+        
+        self.assertEqual(next_page_url, 'http://example.com/page2')
+
+        # Test case for not finding next page URL
+        mock_bs_instance.find.return_value = None
+        
+        next_page_url = find_next_page_url('<a href="http://example.com/page2">Another Link</a>')
+        
+        self.assertIsNone(next_page_url)
+
+if __name__ == '__main__':
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)

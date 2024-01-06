@@ -31,5 +31,48 @@ def generate_main_code():
     print(output)
     return jsonify(output=output)
 
+@app.route('/save_content', methods=['POST'])
+def save_content():
+    data = request.get_json()
+    # Save the content to a file
+    with open('cache/markdown1.txt', 'w') as file:
+        file.write(data['markdown1'])
+    with open('cache/markdown2.txt', 'w') as file:
+        file.write(data['markdown2'])
+    with open('cache/code1.txt', 'w') as file:
+        file.write(data['code1'])
+    with open('cache/code2.txt', 'w') as file:
+        file.write(data['code2'])
+
+    return jsonify({"status": "success", "message": "Content saved successfully"})
+
+@app.route('/get_cache', methods=['GET'])
+def get_cache():
+    markdown1, markdown2, code1, code2 = "", "", "", ""
+    try:
+        with open('cache/markdown1.txt', 'r') as file:
+            markdown1 = file.read()
+    except IOError:
+        markdown1 = ""
+
+    try:
+        with open('cache/markdown2.txt', 'r') as file:
+            markdown2 = file.read()
+    except IOError:
+        markdown2 = ""
+
+    try:
+        with open('cache/code1.txt', 'r') as file:
+            code1 = file.read()
+    except IOError:
+        code1 = ""
+
+    try:
+        with open('cache/code2.txt', 'r') as file:
+            code2 = file.read()
+    except IOError:
+        code2 = ""
+    return jsonify({"status": "success", "markdown1": markdown1, "markdown2": markdown2, "code1": code1, "code2": code2})
+
 if __name__ == '__main__':
     app.run(debug=True)

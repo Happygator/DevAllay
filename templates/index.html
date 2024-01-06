@@ -25,13 +25,13 @@
     .SimpleMDE, .CodeMirror {
       height: 100%;
     }
-	
-	.button-container {
+    
+    .button-container {
       width: 100%;
       text-align: center;
       margin: 10px 0;
     }
-	
+    
     .Code-editor-container {
       width: 50%; /* Half of the screen width */
       height: 20vh; /* 20% of the viewport height */
@@ -44,7 +44,11 @@
   </style>
 </head>
 <body>
-  
+  <div class="button-container">
+    <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
+    <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
+    <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
+  </div>
   <div class="Editor-container">
     <textarea id="markdownEditor1"></textarea>
   </div>
@@ -54,22 +58,19 @@
   </div>
   
   <div class="clear"></div>
-
-  <div class="button-container">
-    <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
-    <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
-    <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
-  </div>
+  
+  
   
   <div class="Code-editor-container" id="codeEditorContainer1"></div>
   <div class="Code-editor-container" id="codeEditorContainer2"></div>
-
+  
   <script>
     var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
     var markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
     var codeEditor1, codeEditor2;
     
     function initializeWindows() {
+      
       
       codeEditor1 = CodeMirror(document.getElementById("codeEditorContainer1"), {
         mode: "javascript",
@@ -80,9 +81,52 @@
         mode: "javascript",
         theme: "default",
       });
+      
+      
+    }
+    
+    function saveContent() {
+      fetch('/save_content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ markdown1: markdownEditor1.value(),
+          markdown2: markdownEditor2.value() ,
+          code1: codeEditor1.getValue() ,
+          code2: codeEditor2.getValue() })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Content saved:', data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+    
+    
+    
+    function getCache() {
+      fetch('/get_cache')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          markdownEditor1.value(data.markdown1);
+          markdownEditor2.value(data.markdown2);
+          codeEditor1.setValue(data.code1);
+          codeEditor2.setValue(data.code2);
+        } else {
+          console.error('Error loading content:', data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     }
     
     function toggleMarkdownEditor() {
+      saveContent()
       var editorContainer = document.querySelector(".Editor-container.right");
       var content = markdownEditor1.value();
       
@@ -96,6 +140,7 @@
       .then(response => response.json())
       .then(data => {
         markdownEditor2.value(data);
+        saveContent()
       })
       .catch(error => {
         console.error('Error:', error);
@@ -135,6 +180,7 @@
           }
           */
           codeEditor1.setValue(data)
+          saveContent()
           codeEditorContainer1.style.display = 'block';
         })
         .catch(error => {
@@ -146,6 +192,7 @@
     }
     
     function writeMainCode() {
+      saveContent()
       if (!codeEditor1 || !codeEditor2) {
         console.error("Code editors are not initialized.");
         return;
@@ -165,8 +212,9 @@
       })
       .then(response => response.json())
       .then(data => {
-        console.log("Received data:", data);
-        codeEditor2.setValue(data);
+        console.log("Received data:", data.output);
+        codeEditor2.setValue(data.output);
+        saveContent()
         document.getElementById("codeEditorContainer2").style.display = 'block';
       })
       .catch(error => {
@@ -176,6 +224,7 @@
     
     // Initialize Ace Editors on page load
     document.addEventListener('DOMContentLoaded', initializeWindows);
+    document.addEventListener('DOMContentLoaded', getCache);
   </script>
   
   
