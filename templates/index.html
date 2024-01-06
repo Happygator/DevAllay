@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html>
 <head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
@@ -26,6 +25,13 @@
     .SimpleMDE, .CodeMirror {
       height: 100%;
     }
+	
+	.button-container {
+      width: 100%;
+      text-align: center;
+      margin: 10px 0;
+    }
+	
     .Code-editor-container {
       width: 50%; /* Half of the screen width */
       height: 20vh; /* 20% of the viewport height */
@@ -48,14 +54,16 @@
   </div>
   
   <div class="clear"></div>
-  
-  <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
-  <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
-  <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
+
+  <div class="button-container">
+    <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
+    <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
+    <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
+  </div>
   
   <div class="Code-editor-container" id="codeEditorContainer1"></div>
   <div class="Code-editor-container" id="codeEditorContainer2"></div>
-  
+
   <script>
     var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
     var markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
@@ -169,6 +177,7 @@
     // Initialize Ace Editors on page load
     document.addEventListener('DOMContentLoaded', initializeWindows);
   </script>
+  
   
 </body>
 </html>
