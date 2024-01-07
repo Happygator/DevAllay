@@ -16,9 +16,9 @@
     .Editor-container.right {
       display: block;
     }
-    #button, #newButton, #mainCodeButton {
+    #docButton, #testButton, #codeButton, #runButton {
       display: block; /* Make buttons block level for full width */
-      width: 100%; /* Full width */
+      width: 20%; 
       margin: 10px 0; /* Margin for spacing */
       height: 50px; /* Button height */
     }
@@ -45,9 +45,11 @@
 </head>
 <body>
   <div class="button-container">
-    <button id="button" onclick="toggleMarkdownEditor()">Generate Design Document</button>
-    <button id="newButton" onclick="toggleFirstCodeEditor()">Write Unit Tests</button>
-    <button id="mainCodeButton" onclick="writeMainCode()">Generate Main Code</button>
+    <button id="docButton" onclick="designDocument()">Generate Design Document</button>
+    <button id="testButton" onclick="unitTests()">Write Unit Tests</button>
+    <button id="codeButton" onclick="mainCode()">Generate Main Code</button>
+    <button id="runButton" onclick="runCode()">Run Code</button>
+    <button id="debugButton" onclick="debugCode()">Debug with Error</button>
   </div>
   <div class="Editor-container">
     <textarea id="markdownEditor1"></textarea>
@@ -63,10 +65,15 @@
   
   <div class="Code-editor-container" id="codeEditorContainer1"></div>
   <div class="Code-editor-container" id="codeEditorContainer2"></div>
+
+  <div class="Editor-container right">
+    <textarea id="errorContainer"></textarea>
+  </div>
   
   <script>
     var markdownEditor1 = new SimpleMDE({ element: document.getElementById("markdownEditor1") });
     var markdownEditor2 = new SimpleMDE({ element: document.getElementById("markdownEditor2") });
+    var errorContainer = new SimpleMDE({ element: document.getElementById("errorContainer") });
     var codeEditor1, codeEditor2;
     
     function initializeWindows() {
@@ -125,7 +132,7 @@
       });
     }
     
-    function toggleMarkdownEditor() {
+    function designDocument() {
       saveContent()
       var editorContainer = document.querySelector(".Editor-container.right");
       var content = markdownEditor1.value();
@@ -147,7 +154,7 @@
       });
     }
     
-    function toggleFirstCodeEditor() {
+    function unitTests() {
       var codeEditorContainer1 = document.getElementById("codeEditorContainer1");
       var isVisible = codeEditorContainer1.style.display === 'block';
       
@@ -190,8 +197,8 @@
         codeEditorContainer1.style.display = 'none';
       }
     }
-    
-    function writeMainCode() {
+
+    function mainCode() {
       saveContent()
       if (!codeEditor1 || !codeEditor2) {
         console.error("Code editors are not initialized.");
@@ -222,11 +229,56 @@
       });
     }
     
+    function runCode() {
+      saveContent()
+      var testsBox = codeEditor1.getValue();
+      var codeBox = codeEditor2.getValue();
+      fetch('/run_main_code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: codeBox, tests: testsBox })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Received data:", data.output);
+        errorContainer.value(data.output)
+        saveContent()
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
+    function debugCode() {
+      saveContent()
+      var testsBox = codeEditor1.getValue();
+      var codeBox = codeEditor2.getValue();
+      var errorFound = errorContainer.value()
+      fetch('/debug_with_error', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: codeBox, tests: testsBox, error: errorFound})
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Received data:", data.output);
+        codeContainer2.setValue(data.output)
+        saveContent()
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
     // Initialize Ace Editors on page load
     document.addEventListener('DOMContentLoaded', initializeWindows);
     document.addEventListener('DOMContentLoaded', getCache);
   </script>
-  
+
   
 </body>
 </html>

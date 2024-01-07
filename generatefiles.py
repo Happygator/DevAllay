@@ -34,14 +34,13 @@ main_code_prompt = '''
 Implement the Python code for the design and the unit tests in one single file.
 Make sure all variables are propertly declared and the code should pass all the unit tests.
 Do not rewrite the unit tests. Instead, only output the main code.
-Do not format the main code with markdown. Instead, output plaintext.
 '''
 unit_test_prompt = '''
 Write the unit tests of public functions in the following design, with detailed
 explanation of what properties are tested. Put all the Python test code in one single file instead of many files.
 Make sure calling unittest.main with
 "unittest.main(argv=['first-arg-is-ignored'], exit=False)"
-Do not format the unit tests with markdown. Instead, output plaintext.
+The main code is stored in mainCode.py instead of anything the design document would say. Import from mainCode.py for the main code instead of anywhere else.   
 '''
 debugging_prompt = '''
 The execution of the unit tests has failed.
@@ -111,6 +110,37 @@ def remove_markdown(input_string):
             # Save the file to the current working directory
             return file_content
 
+def save_files_from_string(input_string):
+    file_names = []
+    # Split the input string by triple backticks
+    file_sections = input_string.split('```')
+    print('sections')
+    for s in file_sections:
+      print(s.split('\n')[0])
+    print('/sections')
+    for section in file_sections:
+        if section.strip():  # Check if the section is not empty
+            # Identify file type
+            if section.lower().startswith('python'):
+                # Extract file name, which might be preceded by a # sign
+                file_name = re.search(r'#?(.+\.py)', section).group(1).strip()
+                # Extract file content
+                file_content = section.split('\n', 1)[1]
+            elif section.lower().startswith('html'):
+                # Extract file name from HTML comment
+                file_name = re.search(r'<!--\s*(.+\.html)\s*-->', section).group(1).strip()
+                # Extract file content
+                file_content = section.split('\n', 1)[1]
+            else:
+                print("Unsupported file type encountered. starting:" + section.split('\n')[0])
+                continue
+            file_name = "generated_files\\" + file_name
+            # Save the file to the current working directory
+            with open(os.path.join(os.getcwd(), file_name), 'w') as file:
+                file.write(file_content)
+                file_names.append(file_name)
+    return file_names
+
 def generateDesignDocument(spec):
     return call_openAi_api(design_doc_prompt, spec)
     
@@ -119,6 +149,18 @@ def generateUnitTests(design_doc):
 
 def generateMainCode(design_doc, tests):
     return remove_markdown(call_openAi_api(main_code_prompt, "Here is the design:\n" + design_doc  + "\n\n\nAnd here are the unit tests:\n" + tests))
+
+def runCode(code, tests):
+    print("Executing unit tests:")
+    process = subprocess.Popen(['python', "cache/unitTests.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    return [stdout, stderr]
+
+def fixCode(code, tests, err):
+    user_prompt =  "\n\n Main code is:\n" + code + "\n\n unit test code is:\n" + tests + "\n\n error encountered is:\n" + err
+    fix = call_openAi_api(debugging_prompt,  user_prompt)
+    return remove_markdown(fix)
+
 """
 design = call_openAi_api(design_doc_prompt, spec)
 print("This is the design document created:")
