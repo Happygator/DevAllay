@@ -1,3 +1,5 @@
 api_key.txt
 __pycache__/generatefiles.cpython-311.pyc
 api_key.txt
+cache/unitTests.py
+cache/mainCode.py
