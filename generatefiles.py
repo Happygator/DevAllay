@@ -8,6 +8,7 @@ from openai import OpenAI
 import sys
 import traceback
 import subprocess
+from os.path import expanduser
     
 # Function to safely load your OpenAI API key
 def load_api_key():
@@ -152,7 +153,7 @@ def generateMainCode(design_doc, tests):
 
 def runCode(code, tests):
     print("Executing unit tests:")
-    process = subprocess.Popen(['python', "cache/unitTests.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(['python', expanduser("~") + "\\cache\\unitTests.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     return [stdout, stderr]
 

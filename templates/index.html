@@ -136,7 +136,7 @@
       saveContent()
       var editorContainer = document.querySelector(".Editor-container.right");
       var content = markdownEditor1.value();
-      
+      markdownEditor2.value("Calling OpenAI API...")
       fetch('/process', {
         method: 'POST',
         headers: {
@@ -155,11 +155,11 @@
     }
     
     function unitTests() {
+      saveContent()
       var codeEditorContainer1 = document.getElementById("codeEditorContainer1");
       var isVisible = codeEditorContainer1.style.display === 'block';
-      
       console.log("Toggle button pressed. Current visibility:", isVisible);
-      
+      codeEditor1.setValue("Calling OpenAI API...")
       if (!isVisible) {
         if (!markdownEditor2) {
           console.error("Markdown Editor 2 is not initialized.");
@@ -207,7 +207,7 @@
       
       var markdownContent = markdownEditor2.value();
       var codeContent = codeEditor1.getValue();
-      
+      codeEditor2.setValue("Calling OpenAI API...")
       console.log("Fetching main code for content:", markdownContent, codeContent);
       
       fetch('/generate_main_code', {
@@ -255,7 +255,8 @@
       saveContent()
       var testsBox = codeEditor1.getValue();
       var codeBox = codeEditor2.getValue();
-      var errorFound = errorContainer.value()
+      var errorFound = errorContainer.value();
+      codeEditor2.setValue("Calling OpenAI API...");
       fetch('/debug_with_error', {
         method: 'POST',
         headers: {
@@ -266,7 +267,7 @@
       .then(response => response.json())
       .then(data => {
         console.log("Received data:", data.output);
-        codeContainer2.setValue(data.output)
+        codeEditor2.setValue(data.output)
         saveContent()
       })
       .catch(error => {

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import generatefiles
-from os.path import expanduser
+from os import path, makedirs
 
 app = Flask(__name__)
 
@@ -51,52 +51,61 @@ def debug_code():
     code = data['code']
     err = data['error']
     result = generatefiles.fixCode(code, tests, err)
+    print(result)
     return jsonify(output=result)
 
 @app.route('/save_content', methods=['POST'])
 def save_content():
-    home = expanduser("~")
+    home = path.expanduser("~")
+    cache_dir = path.join(home, 'cache')
+
+    makedirs(cache_dir, exist_ok=True)
+
     data = request.get_json()
+
     # Save the content to a file
-    with open(home + '\\cache\\markdown1.txt', 'w') as file:
+    with open(path.join(cache_dir, 'markdown1.txt'), 'w') as file:
         file.write(data['markdown1'])
-    with open(home + '\\cache\\markdown2.txt', 'w') as file:
+    with open(path.join(cache_dir, 'markdown2.txt'), 'w') as file:
         file.write(data['markdown2'])
-    with open(home + '\\cache\\unitTests.py', 'w') as file:
+    with open(path.join(cache_dir, 'unitTests.py'), 'w') as file:
         file.write(data['code1'])
-    with open(home + '\\cache\\mainCode.py', 'w') as file:
+    with open(path.join(cache_dir, 'mainCode.py'), 'w') as file:
         file.write(data['code2'])
     return jsonify({"status": "success", "message": "Content saved successfully"})
 
 @app.route('/get_cache', methods=['GET'])
 def get_cache():
-    home = expanduser("~")
-    print(home)
+    home = path.expanduser("~")
+    cache_dir = path.join(home, 'cache')
+
+    # Create the cache directory if it doesn't exist
+    makedirs(cache_dir, exist_ok=True)
+
     markdown1, markdown2, code1, code2 = "", "", "", ""
     try:
-        with open(home + '\\cache\\markdown1.txt', 'r') as file:
+        with open(path.join(cache_dir, 'markdown1.txt'), 'r') as file:
             markdown1 = file.read()
     except IOError:
         markdown1 = ""
 
     try:
-        with open(home + '\\cache\\markdown2.txt', 'r') as file:
+        with open(path.join(cache_dir, 'markdown2.txt'), 'r') as file:
             markdown2 = file.read()
     except IOError:
         markdown2 = ""
 
     try:
-        with open(home + '\\cache\\unitTests.py', 'r') as file:
+        with open(path.join(cache_dir, 'unitTests.py'), 'r') as file:
             code1 = file.read()
     except IOError:
         code1 = ""
 
     try:
-        with open(home + '\\cache\\mainCode.py', 'r') as file:
+        with open(path.join(cache_dir, 'mainCode.py'), 'r') as file:
             code2 = file.read()
     except IOError:
         code2 = ""
     return jsonify({"status": "success", "markdown1": markdown1, "markdown2": markdown2, "code1": code1, "code2": code2})
-
 if __name__ == '__main__':
     app.run(debug=True)
