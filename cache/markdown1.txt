@@ -1,6 +1,0 @@
-A program that would download jpeg images from a series of web pages.
-The URL to the image might be using relative path, the program should be able to find the correct URL.
-The input is the URL of the first web page. The subsequent pages can be found by following the hyperlink labeled with "Next Link".
-The program should iterate to all pages in the series until there is no more.
-
-The code will be used as a command line tool called "image_downloader",  so proper shebang should be added.
