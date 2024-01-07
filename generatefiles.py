@@ -44,11 +44,13 @@ Make sure calling unittest.main with
 The main code is stored in mainCode.py instead of anything the design document would say. Import from mainCode.py for the main code instead of anywhere else.   
 '''
 debugging_prompt = '''
-The execution of the unit tests has failed.
-Explain what went wrong, then fix the entire main code including the part that doesn't need to be changed.
-Put file name code in the code block as a comment.
-Output the entire main code afterwards, including every section that was unchanged.
-Do not write anything similar to (other functions remain unchanged). Instead, simply write the rest of the unchanged code.
+Identify the specific error message from the failed unit tests. 
+Use this error message to explain what went wrong and diagnose the issue in the main code. 
+Correct only the necessary parts of the main code, ensuring the error is resolved. 
+Comment the file name at the start of the code block. 
+Provide the complete main code output, including both the modified and unmodified sections.
+If modifications are required in the unit test code, indicate this in a comment. 
+Output the entire main code, highlighting the changes made to address the error message.
 
 If unit test code needs to be fixed, state so in a comment. Output the entire main code regardless of which part needs to be changed.
 '''
