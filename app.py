@@ -87,25 +87,25 @@ def get_cache():
         with open(path.join(cache_dir, 'markdown1.txt'), 'r') as file:
             markdown1 = file.read()
     except IOError:
-        markdown1 = ""
+        markdown1 = "Write your program description here"
 
     try:
         with open(path.join(cache_dir, 'markdown2.txt'), 'r') as file:
             markdown2 = file.read()
     except IOError:
-        markdown2 = ""
+        markdown2 = "Design document will appear here"
 
     try:
         with open(path.join(cache_dir, 'unitTests.py'), 'r') as file:
             code1 = file.read()
     except IOError:
-        code1 = ""
+        code1 = "Unit tests will appear here"
 
     try:
         with open(path.join(cache_dir, 'mainCode.py'), 'r') as file:
             code2 = file.read()
     except IOError:
-        code2 = ""
+        code2 = "Main code will appear here"
     return jsonify({"status": "success", "markdown1": markdown1, "markdown2": markdown2, "code1": code1, "code2": code2})
 if __name__ == '__main__':
     app.run(debug=True)

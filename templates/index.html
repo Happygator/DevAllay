@@ -6,21 +6,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
   <style>
-    .Editor-container {
+    .spec-container {
       width: 50%;
-      height: 80vh;
+      height: 40vh;
       float: left;
       margin: 10px 0;
       display: inline-block;
     }
-    .Editor-container.right {
-      display: block;
+    .design-doc-container {
+      width: 50%;
+      height: 40vh;
+      display: inline-block;
     }
-    #docButton, #testButton, #codeButton, #runButton {
+    #docButton, #testButton, #codeButton, #runButton, #debugButton {
       display: block; /* Make buttons block level for full width */
-      width: 20%; 
+      width: 10%;   
       margin: 10px 0; /* Margin for spacing */
-      height: 50px; /* Button height */
+      height: 35px; /* Button height */
+      display: inline-block;
+      text-align: center;
     }
     .SimpleMDE, .CodeMirror {
       height: 100%;
@@ -30,13 +34,14 @@
       width: 100%;
       text-align: center;
       margin: 10px 0;
+      
     }
     
     .Code-editor-container {
-      width: 50%; /* Half of the screen width */
-      height: 20vh; /* 20% of the viewport height */
-      float: left; /* Align side by side */
-      display: block; /* Initially hidden */
+      width: 50%; 
+      height: 20vh; 
+      float: left; 
+      display: block; 
     }
     .clear {
       clear: both;
@@ -44,6 +49,14 @@
   </style>
 </head>
 <body>
+  
+  <div class="spec-container">
+    <textarea id="markdownEditor1"></textarea>
+  </div>
+  
+  <div class="design-doc-container">
+    <textarea id="markdownEditor2"></textarea>
+  </div>
   <div class="button-container">
     <button id="docButton" onclick="designDocument()">Generate Design Document</button>
     <button id="testButton" onclick="unitTests()">Write Unit Tests</button>
@@ -51,14 +64,6 @@
     <button id="runButton" onclick="runCode()">Run Code</button>
     <button id="debugButton" onclick="debugCode()">Debug with Error</button>
   </div>
-  <div class="Editor-container">
-    <textarea id="markdownEditor1"></textarea>
-  </div>
-  
-  <div class="Editor-container right">
-    <textarea id="markdownEditor2"></textarea>
-  </div>
-  
   <div class="clear"></div>
   
   
@@ -66,7 +71,7 @@
   <div class="Code-editor-container" id="codeEditorContainer1"></div>
   <div class="Code-editor-container" id="codeEditorContainer2"></div>
 
-  <div class="Editor-container right">
+  <div class="design-doc-container">
     <textarea id="errorContainer"></textarea>
   </div>
   
@@ -136,7 +141,7 @@
       saveContent()
       var editorContainer = document.querySelector(".Editor-container.right");
       var content = markdownEditor1.value();
-      markdownEditor2.value("Calling OpenAI API...")
+      markdownEditor2.value("Generating Design Document...")
       fetch('/process', {
         method: 'POST',
         headers: {
@@ -159,8 +164,7 @@
       var codeEditorContainer1 = document.getElementById("codeEditorContainer1");
       var isVisible = codeEditorContainer1.style.display === 'block';
       console.log("Toggle button pressed. Current visibility:", isVisible);
-      codeEditor1.setValue("Calling OpenAI API...")
-      if (!isVisible) {
+      codeEditor1.setValue("Writing unit tests...")
         if (!markdownEditor2) {
           console.error("Markdown Editor 2 is not initialized.");
           return;
@@ -179,13 +183,6 @@
         .then(	response => response.json())
         .then(data => {
           console.log("Received data:", data);
-          /*
-          if(data.output !== undefined) {
-            codeEditor1.setValue(data.output);
-          } else {
-            console.error("Received 'undefined' for data.output");
-          }
-          */
           codeEditor1.setValue(data)
           saveContent()
           codeEditorContainer1.style.display = 'block';
@@ -193,9 +190,6 @@
         .catch(error => {
           console.error('Error:', error);
         });
-      } else {
-        codeEditorContainer1.style.display = 'none';
-      }
     }
 
     function mainCode() {
@@ -207,7 +201,7 @@
       
       var markdownContent = markdownEditor2.value();
       var codeContent = codeEditor1.getValue();
-      codeEditor2.setValue("Calling OpenAI API...")
+      codeEditor2.setValue("Generating main code...")
       console.log("Fetching main code for content:", markdownContent, codeContent);
       
       fetch('/generate_main_code', {
@@ -256,7 +250,7 @@
       var testsBox = codeEditor1.getValue();
       var codeBox = codeEditor2.getValue();
       var errorFound = errorContainer.value();
-      codeEditor2.setValue("Calling OpenAI API...");
+      codeEditor2.setValue("Revising main");
       fetch('/debug_with_error', {
         method: 'POST',
         headers: {

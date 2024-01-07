@@ -32,9 +32,9 @@ Format your output entirely in plain English, with no code written yet. We need 
 '''
 
 main_code_prompt = '''
-Implement the Python code for the design and the unit tests in one single file.
-Make sure all variables are propertly declared and the code should pass all the unit tests.
-Do not rewrite the unit tests. Instead, only output the main code.
+Write Python code corresponding to the provided unit tests in a single file. 
+Declare all variables correctly to ensure the code passes these tests. 
+Exclude any modifications to the unit tests, focusing solely on the main code development.
 '''
 unit_test_prompt = '''
 Write the unit tests of public functions in the following design, with detailed
@@ -50,7 +50,7 @@ Put file name code in the code block as a comment.
 Output the entire main code afterwards, including every section that was unchanged.
 Do not write anything similar to (other functions remain unchanged). Instead, simply write the rest of the unchanged code.
 
-If unit test code needs to be fixed, ouput the entire unit test code including the part that doesn't need to be changed.
+If unit test code needs to be fixed, state so in a comment. Output the entire main code regardless of which part needs to be changed.
 '''
 valid_inputs = ["y", "n", ""]
 
