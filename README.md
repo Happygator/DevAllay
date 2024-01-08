@@ -1,0 +1,1 @@
+This is a web application that aims to reduce time and resources used in debugging code. To accomplish this, instead of the typical workflow of a user debugging AI-written code, the user verifies that unit tests and a design document are valid, and then the application uses AI to debug its own code with the given tests and document.
