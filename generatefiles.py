@@ -13,7 +13,7 @@ from os.path import expanduser
 # Function to safely load your OpenAI API key
 def load_api_key():
     # replace this when committing to github
-    key = open("api_key.txt").readline()
+    key = open("api_key.txt").readline().strip()
     return key
 
 # Initialize OpenAI SDK
